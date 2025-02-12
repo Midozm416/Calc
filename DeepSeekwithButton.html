@@ -134,73 +134,79 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('carForm');
-            const krwToUsd = document.getElementById('krwToUsd');
-            const usdToSar = document.getElementById('usdToSar');
-            const carPriceKrw = document.getElementById('carPriceKrw');
-            const carPriceTable = document.getElementById('carPriceTable');
-            const officeCommission = document.getElementById('officeCommission');
-            const customsFees = document.getElementById('customsFees');
-            const carSize = document.getElementById('carSize');
-            const totalCost = document.getElementById('totalCost');
-            const calculateButton = document.getElementById('calculate');
-            const copyMessageButton = document.getElementById('copyMessage');
-            const fetchExchangeRateButton = document.getElementById('fetchExchangeRate');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('carForm');
+        const krwToUsd = document.getElementById('krwToUsd');
+        const usdToSar = document.getElementById('usdToSar');
+        const carPriceKrw = document.getElementById('carPriceKrw');
+        const carPriceTable = document.getElementById('carPriceTable');
+        const officeCommission = document.getElementById('officeCommission');
+        const customsFees = document.getElementById('customsFees');
+        const carSize = document.getElementById('carSize');
+        const totalCost = document.getElementById('totalCost');
+        const calculateButton = document.getElementById('calculate');
+        const copyMessageButton = document.getElementById('copyMessage');
+        const fetchExchangeRateButton = document.getElementById('fetchExchangeRate');
 
-            // مفتاح API الخاص بـ ExchangeRate-API
-            const apiKey = '235714e3fe9e8b01c2bb844b'; // استبدل هذا بمفتاح API الخاص بك
-            const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+        // مفتاح API الخاص بـ ExchangeRate-API
+        const apiKey = '235714e3fe9e8b01c2bb844b'; // استبدل هذا بمفتاح API الخاص بك
+        const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
 
-            // دالة لجلب سعر الصرف من API
-            async function fetchExchangeRate() {
-                try {
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
-                    if (data.result === 'success') {
-                        const krwRate = data.conversion_rates.KRW;
-                        krwToUsd.value = krwRate.toFixed(2); // تحديث حقل سعر الصرف
-                        alert('تم جلب سعر الصرف بنجاح!');
-                    } else {
-                        alert('فشل في جلب سعر الصرف. يرجى المحاولة لاحقًا.');
-                    }
-                } catch (error) {
-                    alert('حدث خطأ أثناء جلب سعر الصرف: ' + error.message);
+        // دالة لجلب سعر الصرف من API
+        async function fetchExchangeRate() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                if (data.result === 'success') {
+                    const krwRate = data.conversion_rates.KRW;
+                    krwToUsd.value = krwRate.toFixed(2); // تحديث حقل سعر الصرف
+                    alert('تم جلب سعر الصرف بنجاح!');
+                } else {
+                    alert('فشل في جلب سعر الصرف. يرجى المحاولة لاحقًا.');
                 }
+            } catch (error) {
+                alert('حدث خطأ أثناء جلب سعر الصرف: ' + error.message);
             }
+        }
 
-            // دالة لحساب التكلفة الإجمالية
-            function calculateTotalCost() {
-                // جلب سعر الصرف الأصلي وحساب السعر المعدل
-                const exchangeRateKrw = (parseFloat(krwToUsd.value) || 0) - 10; // طرح 10 وون
-                const carPriceUsd = (parseFloat(carPriceKrw.value) || 0) / (exchangeRateKrw || 1);
-                const carPriceSar = (carPriceUsd || 0) * (parseFloat(usdToSar.value) || 0);
-                const taxAndCustoms = (parseFloat(carPriceTable.value) || 0) * 0.2;
-                const shippingCost = carSize.value === 'small' ? 5800 : 6800;
-                const total = (carPriceSar || 0) + (taxAndCustoms || 0) + (parseFloat(customsFees.value) || 0) + (parseFloat(officeCommission.value) || 0) + shippingCost;
+        // دالة لحساب التكلفة الإجمالية
+        function calculateTotalCost() {
+            // جلب سعر الصرف الأصلي وحساب السعر المعدل
+            const exchangeRateKrw = (parseFloat(krwToUsd.value) || 0) - 10; // طرح 10 وون
+            const carPriceUsd = (parseFloat(carPriceKrw.value) || 0) / (exchangeRateKrw || 1);
+            const carPriceSar = (carPriceUsd || 0) * (parseFloat(usdToSar.value) || 0);
+            const taxAndCustoms = (parseFloat(carPriceTable.value) || 0) * 0.2;
+            const shippingCost = carSize.value === 'small' ? 5800 : 6800;
+            const total = (carPriceSar || 0) + (taxAndCustoms || 0) + (parseFloat(customsFees.value) || 0) + (parseFloat(officeCommission.value) || 0) + shippingCost;
 
-                totalCost.textContent = total.toFixed(2);
-            }
+            totalCost.textContent = Math.round(total);
 
-            // دالة لنسخ الرسالة
-            function copyMessageToClipboard() {
-                const carType = document.getElementById('carType').value;
-                const seats = document.getElementById('seats').value;
-                const fuel = document.getElementById('fuel').value;
-                const model = document.getElementById('model').value;
-                const engineSize = document.getElementById('engineSize').value;
-                const mileage = document.getElementById('mileage').value;
-                const carPriceKrw = document.getElementById('carPriceKrw').value;
-                const usdToSar = document.getElementById('usdToSar').value;
-                const taxAndCustoms = ((parseFloat(document.getElementById('carPriceTable').value) || 0) * 0.2).toFixed(2);
-                const customsFees = document.getElementById('customsFees').value;
-                const officeCommission = document.getElementById('officeCommission').value;
-                const shippingCost = carSize.value === 'small' ? 5800 : 6800;
-                const totalCost = document.getElementById('totalCost').textContent;
-                const bodyCondition = document.getElementById('bodyCondition').value;
+        }
 
-                const message = `
+        // دالة لنسخ الرسالة
+        function copyMessageToClipboard() {
+            const carType = document.getElementById('carType').value;
+            const seats = document.getElementById('seats').value;
+            const fuel = document.getElementById('fuel').value;
+            const model = document.getElementById('model').value;
+            const engineSize = document.getElementById('engineSize').value;
+            const mileage = document.getElementById('mileage').value;
+            const carPriceKrw = document.getElementById('carPriceKrw').value;
+            const taxAndCustoms = ((parseFloat(document.getElementById('carPriceTable').value) || 0) * 0.2).toFixed(2);
+            const customsFees = document.getElementById('customsFees').value;
+            const officeCommission = document.getElementById('officeCommission').value;
+            const carSize = document.getElementById('carSize').value;
+            const shippingCost = carSize === 'small' ? 5800 : 6800;
+            const totalCost = document.getElementById('totalCost').textContent;
+            const bodyCondition = document.getElementById('bodyCondition').value;
+
+            // حساب سعر السيارة بالدولار ثم تحويله إلى الريال السعودي
+            const exchangeRateKrw = (parseFloat(krwToUsd.value) || 0) - 10; 
+            const carPriceUsd = (parseFloat(carPriceKrw) || 0) / (exchangeRateKrw || 1);
+            const carPriceSar = (carPriceUsd || 0) * (parseFloat(usdToSar.value) || 0);
+
+            const message = `
  نوع السيارة: ${carType}
  عدد المقاعد: ${seats}
  الوقود: ${fuel}
@@ -208,39 +214,40 @@
  حجم الماكينة: ${engineSize} CC
  العداد: ${mileage} كم
  سعر الوون: ${carPriceKrw}
- سعر الريال: ${usdToSar}
+ سعر الريال: ${Math.round(carPriceSar)}
  الضريبة والجمارك: ${taxAndCustoms}
  رسوم التخليص الجمركي: ${customsFees}
  عمولة المكتب: ${officeCommission}
  تكلفة الشحن: ${shippingCost}
  **إجمالي السعر شامل**: ${totalCost} ريال سعودي
  حالة البدي: ${bodyCondition}
-                `;
+            `;
 
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(message).then(() => {
-                        alert('تم نسخ الرسالة!');
-                    }).catch(() => {
-                        alert('حدث خطأ أثناء نسخ الرسالة!');
-                    });
-                } else {
-                    // حل بديل للمتصفحات التي لا تدعم navigator.clipboard
-                    const textarea = document.createElement('textarea');
-                    textarea.value = message;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(message).then(() => {
                     alert('تم نسخ الرسالة!');
-                }
+                }).catch(() => {
+                    alert('حدث خطأ أثناء نسخ الرسالة!');
+                });
+            } else {
+                // حل بديل للمتصفحات التي لا تدعم navigator.clipboard
+                const textarea = document.createElement('textarea');
+                textarea.value = message;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('تم نسخ الرسالة!');
             }
+        }
 
-            // إضافة الأحداث
-            form.addEventListener('input', calculateTotalCost);
-            calculateButton.addEventListener('click', calculateTotalCost);
-            copyMessageButton.addEventListener('click', copyMessageToClipboard);
-            fetchExchangeRateButton.addEventListener('click', fetchExchangeRate);
-        });
-    </script>
+        // إضافة الأحداث
+        form.addEventListener('input', calculateTotalCost);
+        calculateButton.addEventListener('click', calculateTotalCost);
+        copyMessageButton.addEventListener('click', copyMessageToClipboard);
+        fetchExchangeRateButton.addEventListener('click', fetchExchangeRate);
+    });
+</script>
+
 </body>
 </html>
