@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة تكاليف السيارة المستعملة من كوريا</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        legend {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #totalCost {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>حاسبة تكاليف السيارة المستعملة من كوريا</h1>
+    <div class="container">
+        <form id="carForm">
+            <fieldset>
+                <legend>بيانات السيارة</legend>
+                <label for="carType">نوع السيارة:</label>
+                <input type="text" id="carType" name="carType" required>
+                <label for="seats">عدد المقاعد:</label>
+                <input type="number" id="seats" name="seats" required>
+                <label for="fuel">الوقود:</label>
+                <select id="fuel" name="fuel" required>
+                    <option value="بنزين">بنزين</option>
+                    <option value="ديزل">ديزل</option>
+                    <option value="هايبرد">هايبرد</option>
+                    <option value="كهربائية">كهربائية</option>
+                </select>
+                <label for="model">الموديل:</label>
+                <input type="text" id="model" name="model" required>
+                <label for="engineSize">حجم الماكينة (CC):</label>
+                <input type="number" id="engineSize" name="engineSize" required>
+                <label for="mileage">العداد:</label>
+                <input type="number" id="mileage" name="mileage" required> كم
+                <label for="bodyCondition">حالة البدي:</label>
+                <input type="text" id="bodyCondition" name="bodyCondition" required>
+                <label for="carSize">حجم السيارة:</label>
+                <select id="carSize" name="carSize" required>
+                    <option value="small">سيارة صغيرة</option>
+                    <option value="large">سيارة كبيرة</option>
+                </select>
+            </fieldset>
+
+            <fieldset>
+                <legend>الأسعار وسعر الصرف</legend>
+                <label for="krwToUsd">سعر صرف الدولار مقابل الوون الكوري:</label>
+                <input type="number" id="krwToUsd" name="krwToUsd" required>
+                <button type="button" id="fetchExchangeRate">جلب سعر الصرف</button><br><br>
+                <label for="usdToSar">سعر صرف الريال مقابل الدولار:</label>
+                <input type="number" id="usdToSar" name="usdToSar" value="3.76" required>
+                <label for="carPriceKrw">سعر السيارة بالوون الكوري:</label>
+                <input type="number" id="carPriceKrw" name="carPriceKrw" required>
+                <label for="carPriceTable">سعر السيارة حسب الجدول:</label>
+                <input type="number" id="carPriceTable" name="carPriceTable" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>الرسوم الثابتة</legend>
+                <label for="officeCommission">عمولة المكتب:</label>
+                <input type="number" id="officeCommission" name="officeCommission" value="2000" required>
+                <label for="customsFees">رسوم تخليص جمركي:</label>
+                <input type="number" id="customsFees" name="customsFees" value="1000" required>
+            </fieldset>
+
+            <fieldset>
+                <legend>النتائج</legend>
+                <label for="totalCost">إجمالي تكلفة السيارة بالريال:</label>
+                <span id="totalCost">0.00</span> ريال سعودي
+            </fieldset>
+
+            <button type="button" id="calculate">حساب التكلفة</button>
+            <button type="button" id="copyMessage">نسخ الرسالة</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('carForm');
+            const krwToUsd = document.getElementById('krwToUsd');
+            const usdToSar = document.getElementById('usdToSar');
+            const carPriceKrw = document.getElementById('carPriceKrw');
+            const carPriceTable = document.getElementById('carPriceTable');
+            const officeCommission = document.getElementById('officeCommission');
+            const customsFees = document.getElementById('customsFees');
+            const carSize = document.getElementById('carSize');
+            const totalCost = document.getElementById('totalCost');
+            const calculateButton = document.getElementById('calculate');
+            const copyMessageButton = document.getElementById('copyMessage');
+            const fetchExchangeRateButton = document.getElementById('fetchExchangeRate');
+
+            // مفتاح API الخاص بـ ExchangeRate-API
+            const apiKey = '235714e3fe9e8b01c2bb844b'; // استبدل هذا بمفتاح API الخاص بك
+            const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+
+            // دالة لجلب سعر الصرف من API
+            async function fetchExchangeRate() {
+                try {
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    if (data.result === 'success') {
+                        const krwRate = data.conversion_rates.KRW;
+                        krwToUsd.value = krwRate.toFixed(2); // تحديث حقل سعر الصرف
+                        alert('تم جلب سعر الصرف بنجاح!');
+                    } else {
+                        alert('فشل في جلب سعر الصرف. يرجى المحاولة لاحقًا.');
+                    }
+                } catch (error) {
+                    alert('حدث خطأ أثناء جلب سعر الصرف: ' + error.message);
+                }
+            }
+
+            // دالة لحساب التكلفة الإجمالية
+            function calculateTotalCost() {
+                // جلب سعر الصرف الأصلي وحساب السعر المعدل
+                const exchangeRateKrw = (parseFloat(krwToUsd.value) || 0) - 10; // طرح 10 وون
+                const carPriceUsd = (parseFloat(carPriceKrw.value) || 0) / (exchangeRateKrw || 1);
+                const carPriceSar = (carPriceUsd || 0) * (parseFloat(usdToSar.value) || 0);
+                const taxAndCustoms = (parseFloat(carPriceTable.value) || 0) * 0.2;
+                const shippingCost = carSize.value === 'small' ? 5800 : 6800;
+                const total = (carPriceSar || 0) + (taxAndCustoms || 0) + (parseFloat(customsFees.value) || 0) + (parseFloat(officeCommission.value) || 0) + shippingCost;
+
+                totalCost.textContent = total.toFixed(2);
+            }
+
+            // دالة لنسخ الرسالة
+            function copyMessageToClipboard() {
+                const carType = document.getElementById('carType').value;
+                const seats = document.getElementById('seats').value;
+                const fuel = document.getElementById('fuel').value;
+                const model = document.getElementById('model').value;
+                const engineSize = document.getElementById('engineSize').value;
+                const mileage = document.getElementById('mileage').value;
+                const carPriceKrw = document.getElementById('carPriceKrw').value;
+                const usdToSar = document.getElementById('usdToSar').value;
+                const taxAndCustoms = ((parseFloat(document.getElementById('carPriceTable').value) || 0) * 0.2).toFixed(2);
+                const customsFees = document.getElementById('customsFees').value;
+                const officeCommission = document.getElementById('officeCommission').value;
+                const shippingCost = carSize.value === 'small' ? 5800 : 6800;
+                const totalCost = document.getElementById('totalCost').textContent;
+                const bodyCondition = document.getElementById('bodyCondition').value;
+
+                const message = `
+ نوع السيارة: ${carType}
+ عدد المقاعد: ${seats}
+ الوقود: ${fuel}
+ الموديل: ${model}
+ حجم الماكينة: ${engineSize} CC
+ العداد: ${mileage} كم
+ سعر الوون: ${carPriceKrw}
+ سعر الريال: ${usdToSar}
+ الضريبة والجمارك: ${taxAndCustoms}
+ رسوم التخليص الجمركي: ${customsFees}
+ عمولة المكتب: ${officeCommission}
+ تكلفة الشحن: ${shippingCost}
+ **إجمالي السعر شامل**: ${totalCost} ريال سعودي
+ حالة البدي: ${bodyCondition}
+                `;
+
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert('تم نسخ الرسالة!');
+                    }).catch(() => {
+                        alert('حدث خطأ أثناء نسخ الرسالة!');
+                    });
+                } else {
+                    // حل بديل للمتصفحات التي لا تدعم navigator.clipboard
+                    const textarea = document.createElement('textarea');
+                    textarea.value = message;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('تم نسخ الرسالة!');
+                }
+            }
+
+            // إضافة الأحداث
+            form.addEventListener('input', calculateTotalCost);
+            calculateButton.addEventListener('click', calculateTotalCost);
+            copyMessageButton.addEventListener('click', copyMessageToClipboard);
+            fetchExchangeRateButton.addEventListener('click', fetchExchangeRate);
+        });
+    </script>
+</body>
+</html>
